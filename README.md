@@ -37,12 +37,10 @@ handwritten-uml-dataset/
 ├── plantuml_server.py       # Persistent PlantUML process for XMI generation
 ├── plantuml-custompipe-v3.jar  # Custom PlantUML JAR with pipe error handling
 ├── annotations.json         # All annotated images with their PlantUML code
-├── annotations_backup.json  # Backup of annotations
 ├── hf_pusher.ipynb          # Pushes annotations to HuggingFace as a dataset
 ├── crop_images.ipynb        # Crops tablet images to remove excess background
 ├── convert_crop.ipynb       # Converts PDF scans to cropped images
-├── check_all_annotations.py # Pre-checks annotations for XMI generation issues
-├── annotation_stats.py      # Statistics on the annotation progress
+├── annotation_stats.py      # Statistics on the class diagram & activity diagram distribution
 ├── requirements.txt         # Python dependencies
 └── .gitignore
 ```
