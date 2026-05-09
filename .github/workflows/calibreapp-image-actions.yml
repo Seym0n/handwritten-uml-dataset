@@ -1,25 +1,30 @@
 name: Compress Images
 on:
-  pull_request:
-    # Run Image Actions when JPG, JPEG, PNG, WebP or AVIF files are added or changed.
-    # See https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#onpushpull_requestpaths for reference.
-    paths:
-      - '**.jpg'
-      - '**.jpeg'
-      - '**.png'
-      - '**.webp'
-      - '**.avif'
   workflow_dispatch:
 jobs:
   build:
-    # Allow manual dispatch; for PRs only run from the same repo (not forks).
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     name: calibreapp/image-actions
-    permissions: write-all
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Compress PR Images
+      - name: Compress Images
+        id: calibre
         uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
+
+      - name: Create Pull Request
+        if: steps.calibre.outputs.markdown != ''
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: Compress Images
+          branch: chore/compress-images
+          branch-suffix: timestamp
+          commit-message: Compress Images
+          body: ${{ steps.calibre.outputs.markdown }}
