@@ -1,10 +1,10 @@
-# Handwritten UML Dataset
+# CAS2UML Validator Tool
 
 A data annotation tool for manually annotating handwritten UML diagrams with PlantUML code, and a pipeline to publish the resulting dataset to HuggingFace.
 
 ## Overview
 
-The tool presents handwritten UML class and activity diagram images one by one in a Gradio web app. For each image, you write the corresponding PlantUML code, which is rendered locally for a live preview. Annotations are saved to `annotations.json` and can be pushed to HuggingFace as a structured dataset.
+The CAS2UML Validator presents handwritten UML class and activity diagram images one by one in a Gradio web app. For each image, you write the corresponding PlantUML code, which is rendered locally for a live preview. Annotations are saved to `annotations.json` and can be pushed to HuggingFace as a structured dataset.
 
 ## Get Started
 
@@ -45,9 +45,9 @@ handwritten-uml-dataset/
 └── .gitignore
 ```
 
-## Dataset
+## CAS2UML Dataset
 
-The annotated dataset is published on HuggingFace:
+The annotated dataset (CAS2UML) is published on HuggingFace:
 [Seym0n/handwritten_plantuml_dataset](https://huggingface.co/datasets/Seym0n/handwritten_plantuml_dataset)
 
 It contains handwritten UML class and activity diagram images paired with their PlantUML and XMI representations, split into train/test sets.
