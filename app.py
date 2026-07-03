@@ -12,15 +12,22 @@ ANNOTATIONS_FILE = "annotations.json"
 JAR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plantuml-custompipe-v3.jar")
 _PLANTUML_ERROR_RX = re.compile(r"ERROR\r?\n(\d+)\r?\n([^\r\n]+)")
 
+def normalize_path(path):
+    return path.replace("\\", "/") if path else path
+
 def load_annotations():
     if Path(ANNOTATIONS_FILE).exists():
         with open(ANNOTATIONS_FILE, 'r') as f:
-            return json.load(f)
+            annotations = json.load(f)
+        for a in annotations:
+            a["image"] = normalize_path(a["image"])
+        return annotations
     return []
 
 DIAGRAM_TYPES = ["class_diagram", "activity_diagram"]
 
 def save_annotation(image_path, plantuml_code, diagram_type, annotations):
+    image_path = normalize_path(image_path)
     # Check if annotation for this image already exists
     existing_idx = next((i for i, a in enumerate(annotations) if a["image"] == image_path), None)
 
@@ -105,6 +112,7 @@ def render_diagram(puml_code: str):
 
 # Get list of images to annotate
 images_to_annotate = list(Path("images").glob("**/*.png")) + list(Path("images").glob("**/*.jpg")) + list(Path("images").glob("**/*.bmp"))
+images_to_annotate.sort()
 
 if not images_to_annotate:
     print("⚠️ No images found in 'images' folder! Creating dummy list...")
@@ -112,7 +120,7 @@ if not images_to_annotate:
 
 # Load existing annotations and check if first image has annotation
 loaded_annotations = load_annotations()
-first_image_path = str(images_to_annotate[0]) if images_to_annotate[0] else None
+first_image_path = normalize_path(str(images_to_annotate[0])) if images_to_annotate[0] else None
 existing_annotation = next((a for a in loaded_annotations if a["image"] == first_image_path), None)
 initial_code = existing_annotation["plantuml"] if existing_annotation else "```plantuml\n@startuml\n\n\n@enduml\n```"
 initial_diagram_type = existing_annotation.get("type", "class_diagram") if existing_annotation else "activity_diagram"
@@ -151,6 +159,17 @@ with gr.Blocks(title="UML to PlantUML Annotator") as demo:
                     scale=1
                 )
                 next_btn = gr.Button("Next →", size="sm", scale=1)
+
+            with gr.Row():
+                jump_input = gr.Number(
+                    label="Jump to image #",
+                    value=1,
+                    precision=0,
+                    minimum=1,
+                    maximum=len(images_to_annotate),
+                    scale=2
+                )
+                jump_btn = gr.Button("Go", size="sm", scale=1)
 
             skip_labeled_checkbox = gr.Checkbox(
                 label="Skip already labeled data",
@@ -217,7 +236,7 @@ with gr.Blocks(title="UML to PlantUML Annotator") as demo:
             max_attempts = len(images_to_annotate)
 
             while attempts < max_attempts:
-                new_image = str(images_to_annotate[new_idx]) if images_to_annotate[new_idx] else None
+                new_image = normalize_path(str(images_to_annotate[new_idx])) if images_to_annotate[new_idx] else None
                 existing = next((a for a in annotations if a["image"] == new_image), None)
 
                 # If no existing annotation, we found an unlabeled image
@@ -235,10 +254,14 @@ with gr.Blocks(title="UML to PlantUML Annotator") as demo:
 
                 attempts += 1
 
+        return load_index(new_idx, annotations)
+
+    def load_index(new_idx, annotations):
         new_image = str(images_to_annotate[new_idx]) if images_to_annotate[new_idx] else None
+        new_image_key = normalize_path(new_image)
 
         # Check if this image already has annotation
-        existing = next((a for a in annotations if a["image"] == new_image), None)
+        existing = next((a for a in annotations if a["image"] == new_image_key), None)
         code = existing["plantuml"] if existing else "```plantuml\n@startuml\n\n\n@enduml\n```"
         diagram_type = existing.get("type", "class_diagram") if existing else "activity_diagram"
 
@@ -255,7 +278,12 @@ with gr.Blocks(title="UML to PlantUML Annotator") as demo:
             status_msg,
             new_image if new_image else ""
         )
-    
+
+    def jump_to(image_number, annotations):
+        new_idx = int(image_number) - 1
+        new_idx = max(0, min(new_idx, len(images_to_annotate) - 1))
+        return load_index(new_idx, annotations)
+
     # Event handlers
     validate_btn.click(
         update_preview,
@@ -278,6 +306,12 @@ with gr.Blocks(title="UML to PlantUML Annotator") as demo:
     prev_btn.click(
         lambda idx, ann, skip: navigate(-1, idx, ann, skip),
         inputs=[index_state, annotations_state, skip_labeled_checkbox],
+        outputs=[input_image, plantuml_editor, diagram_type_dropdown, index_state, progress_text, preview_image, status, image_path_display]
+    )
+
+    jump_btn.click(
+        jump_to,
+        inputs=[jump_input, annotations_state],
         outputs=[input_image, plantuml_editor, diagram_type_dropdown, index_state, progress_text, preview_image, status, image_path_display]
     )
 
