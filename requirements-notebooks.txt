@@ -1,0 +1,8 @@
+requests
+Pillow
+numpy
+torch
+pdf2image
+datasets
+pandas
+tqdm
