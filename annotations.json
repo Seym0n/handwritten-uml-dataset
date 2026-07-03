@@ -2449,7 +2449,7 @@
   },
   {
     "image": "images/activity_diagram4/page_119_processed.png",
-    "plantuml": "```plantuml\n@startuml\n\nstart\n\nrepeat:User clicks on \"logout\" button\n\nbackward: User hasn't validated the modification;\n\nrepeat while (Modification has been validated?) is ([No]) not ([Yes])\n\nif (Confirm logout?) then ([No])\n  stop\nelse ([Yes])\n  :User has successfully logged out;\n  stop\nendif\n\n@enduml\n```",
+    "plantuml": "```plantuml\n@startuml\n\nstart\n\nrepeat:User clicks on \"logout\" button;\n\nbackward: User hasn't validated the modification;\n\nrepeat while (Modification has been validated?) is ([No]) not ([Yes])\n\nif (Confirm logout?) then ([No])\n  stop\nelse ([Yes])\n  :User has successfully logged out;\n  stop\nendif\n\n@enduml\n```",
     "type": "activity_diagram",
     "timestamp": "2026-03-23T11:38:58.179072"
   },
